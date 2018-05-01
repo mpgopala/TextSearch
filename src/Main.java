@@ -1,23 +1,21 @@
 import ir.TextParser;
-import java.io.*;
 
-public class Main {
-    private static String readFile(String fileName) throws IOException
-    {
-        File file = new File(fileName);
-        BufferedInputStream bin = new BufferedInputStream(new FileInputStream(
-                file));
-        byte[] buffer = new byte[(int) file.length()];
-        bin.read(buffer);
-        return new String(buffer);
-    }
+class Main {
+
 
     public static void main(String [] args)
     {
         try {
-            String fileName = "/Users/gsharma/Code/IRAssignment/src/test.txt";
-            String contents = readFile(fileName);
-            TextParser parser = new TextParser(contents);
+            String[] fileNames = {
+                    "/Users/gsharma/Code/IRAssignment/src/testdata/Doc1.txt",
+                    "/Users/gsharma/Code/IRAssignment/src/testdata/Doc2.txt",
+                    "/Users/gsharma/Code/IRAssignment/src/testdata/Doc3.txt",
+                    "/Users/gsharma/Code/IRAssignment/src/testdata/Doc4.txt",
+                    "/Users/gsharma/Code/IRAssignment/src/testdata/Doc5.txt",
+                    "/Users/gsharma/Code/IRAssignment/src/testdata/Doc6.txt"
+            };
+            TextParser parser = new TextParser(fileNames);
+            parser.parse();
         }
         catch(Exception e)
         {
