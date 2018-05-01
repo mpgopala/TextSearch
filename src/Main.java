@@ -7,15 +7,19 @@ class Main {
     {
     	//src/testdata/Doc1.txt src/testdata/Doc2.txt src/testdata/Doc3.txt src/testdata/Doc4.txt src/testdata/Doc5.txt src/testdata/Doc6.txt
         try {
-            String[] fileNames = args; /*{
+            String[] fileNames = {
                     "src/testdata/Doc1.txt",
                     "src/testdata/Doc2.txt",
                     "src/testdata/Doc3.txt",
                     "src/testdata/Doc4.txt",
                     "src/testdata/Doc5.txt",
                     "src/testdata/Doc6.txt"
-            }; */
-            TextParser parser = new TextParser(fileNames);
+            };
+
+
+	        if(args.length > 0)
+				fileNames = args;
+		        TextParser parser = new TextParser(fileNames);
             parser.parse();
         }
         catch(Exception e)

@@ -1,5 +1,6 @@
 package ir;
 
+import ir.filter.ConvertToLowerCase;
 import ir.filter.Filter;
 import ir.filter.Stemmer;
 import ir.filter.StopWordRemover;
@@ -100,6 +101,7 @@ public class TextParser {
             documentsMap.put(file, documentsMap.size() + 1);
             tokensMap.put(documentsMap.get(file), new ArrayList<>(Arrays.asList(fileTokens)));
         }
+        filters.add(new ConvertToLowerCase());
         filters.add(new StopWordRemover());
         filters.add(new Stemmer());
     }
