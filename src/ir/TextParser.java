@@ -1,6 +1,7 @@
 package ir;
 
 import ir.filter.Filter;
+import ir.filter.Stemmer;
 import ir.filter.StopWordRemover;
 
 import java.io.BufferedInputStream;
@@ -100,6 +101,7 @@ public class TextParser {
             tokensMap.put(documentsMap.get(file), new ArrayList<>(Arrays.asList(fileTokens)));
         }
         filters.add(new StopWordRemover());
+        filters.add(new Stemmer());
     }
 
     public void parse()
