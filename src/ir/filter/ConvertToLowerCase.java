@@ -2,7 +2,7 @@ package ir.filter;
 
 import java.util.ArrayList;
 
-public class ConvertToLowerCase extends Filter
+class ConvertToLowerCase extends Filter
 {
 	@Override
 	public ArrayList<String> execute(ArrayList<String> tokens)

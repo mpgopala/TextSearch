@@ -3,7 +3,7 @@ package ir.filter;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class StopWordRemover extends Filter
+class StopWordRemover extends Filter
 {
     private static final String[] stopWords = {
             "a",

@@ -1,24 +1,26 @@
 package ir;
 
-import ir.filter.ConvertToLowerCase;
 import ir.filter.Filter;
-import ir.filter.Stemmer;
-import ir.filter.StopWordRemover;
+import ir.util.Utils;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.*;
 
-public class TextParser {
+class TextParser {
 
-    private final ArrayList<Filter> filters = new ArrayList<>();
+    private ArrayList<Filter> _filters = new ArrayList<>();
 
-	private final Map<String, Integer> documentsMap = new TreeMap<>();
+	private final Map<Integer, String> documentsMap = new TreeMap<>();
 
     private final Map<Integer, ArrayList<String> > tokensMap = new TreeMap<>();
 
     private final Map<String, TreeMap<Integer, ArrayList<Integer>> > index = new TreeMap<>();
+
+    final Map<Integer, String> getDocumentsMap() { return documentsMap; }
+
+    final Map<String, TreeMap<Integer, ArrayList<Integer>> > getIndex() { return index; }
 
     private static String readFile(String fileName)
     {
@@ -44,71 +46,27 @@ public class TextParser {
         return retVal;
     }
 
-    private void applyFilters()
+
+
+    TextParser(String[] files, ArrayList<Filter> filters)
     {
-        for(int i = 0; i < filters.size(); i++)
-        {
-            Filter filter = filters.get(i);
-            if(filter.isEnabled())
-            {
-                for(Map.Entry<Integer, ArrayList<String>> entry : tokensMap.entrySet())
-                {
-                    ArrayList<String> tokens = entry.getValue();
-                    tokens = filter.execute(tokens);
-                    entry.setValue(tokens);
-                }
-            }
-        }
-    }
+    	if(files == null)
+    		return;
 
-    private void printIndex()
-    {
-    	//Print the document index
-	    for(Map.Entry<String, Integer> docEntry : documentsMap.entrySet())
-	    {
-	    	System.out.println(docEntry.getValue() + " -> " + docEntry.getKey());
-	    }
-
-    	for(Map.Entry<String, TreeMap<Integer, ArrayList<Integer>>> indexEntry : index.entrySet())
-    	{
-		    StringBuilder builder = new StringBuilder();
-		    builder.append(indexEntry.getKey());
-		    builder.append(" -> ");
-		    for(Map.Entry<Integer, ArrayList<Integer>> entry : indexEntry.getValue().entrySet())
-		    {
-			    builder.append(entry.getKey());
-			    builder.append(": ");
-			    boolean first = true;
-			    for(int i = 0; i < entry.getValue().size(); i++) {
-				    if(!first)
-					    builder.append(", ");
-				    builder.append(entry.getValue().get(i));
-				    first = false;
-			    }
-			    builder.append("; ");
-		    }
-
-		    System.out.println(builder.toString());
-	    }
-    }
-
-    public TextParser(String[] files)
-    {
         for(String file : files)
         {
             String fileContents = readFile(file);
             String[] fileTokens = fileContents.split(" ");
-            documentsMap.put(file, documentsMap.size() + 1);
-            tokensMap.put(documentsMap.get(file), new ArrayList<>(Arrays.asList(fileTokens)));
+            Integer id = documentsMap.size() + 1;
+            documentsMap.put(id, file);
+            tokensMap.put(id, new ArrayList<>(Arrays.asList(fileTokens)));
         }
-        filters.add(new ConvertToLowerCase());
-        filters.add(new StopWordRemover());
-        filters.add(new Stemmer());
+        _filters = filters;
     }
 
-    public void parse()
+    void parse()
     {
-        applyFilters();
+        Utils.applyFilters(_filters, tokensMap);
 
         for(Map.Entry<Integer, ArrayList<String>> entry : tokensMap.entrySet())
         {
@@ -140,8 +98,5 @@ public class TextParser {
 		        index.put(token, docIndices);
 	        }
         }
-
-
-        printIndex();
     }
 }
