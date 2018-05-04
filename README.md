@@ -13,7 +13,7 @@ Typing <i>exit</i> as the query will exit the program.
 This project uses IntelliJ IDEA latest version as IDE.
 
 # Running the app
-java -jar IRAssignment.jar 
+```java -jar IRAssignment.jar```
 
 ## Arguments
     --docs      Space separated list of documents to parse within "" ex: "doc1.txt doc2.txt"
