@@ -28,10 +28,12 @@ public class IRManager
 
 
 		if(files != null && files.length > 0) {
+			System.out.println("Parsing and indexing the supplied documents...");
 			TextParser textParser = new TextParser(files, _filters);
 			parse(textParser, indexFile);
 		}
 		else if(indexFile != null) {
+			System.out.println("parsing the index file");
 			_indexFile = indexFile;
 			parseIndexFile(_indexFile);
 		}
