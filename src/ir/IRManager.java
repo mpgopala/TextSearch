@@ -4,6 +4,8 @@ import ir.filter.Filter;
 import ir.filter.FilterFactory;
 import ir.util.Utils;
 
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.util.*;
 
 public class IRManager
@@ -11,6 +13,10 @@ public class IRManager
 	private TextParser _textParser;
 
 	private String _indexFile;
+
+	private Map<Integer, String> _documentsMap;
+
+	private Map<String, TreeMap<Integer, ArrayList<Integer>> > _termIndex;
 
 	private ArrayList<Filter> _filters = new ArrayList<>();
 
@@ -20,19 +26,63 @@ public class IRManager
 		_filters.add(FilterFactory.createFilter(FilterFactory.FilterType.STOP_WORD_REMOVER));
 		_filters.add(FilterFactory.createFilter(FilterFactory.FilterType.STEMMER));
 
-		_textParser = new TextParser(files, _filters);
-		_indexFile = indexFile;
+
+		if(files != null && files.length > 0) {
+			TextParser textParser = new TextParser(files, _filters);
+			parse(textParser, indexFile);
+		}
+		else if(indexFile != null) {
+			_indexFile = indexFile;
+			parseIndexFile(_indexFile);
+		}
+		else
+		{
+			throw new IllegalArgumentException("Need to pass either documents to parse or an index file!");
+		}
+
+		printIndexes(null);
 	}
 
-	public void parse()
+	private void parse(TextParser parser, String indexFile)
 	{
-		_textParser.parse();
+		parser.parse();
 
-		String documentsIndex = Utils.printDocumentIndex(_textParser.getDocumentsMap());
-		System.out.println(documentsIndex);
+		_documentsMap = parser.getDocumentsMap();
+		_termIndex = parser.getIndex();
 
-		String termIndex = Utils.printIndex(_textParser.getIndex());
-		System.out.println(termIndex);
+		if(indexFile != null)
+		{
+			try {
+				FileOutputStream fos = new FileOutputStream(indexFile);
+				OutputStreamWriter osw = new OutputStreamWriter(fos);
+				printIndexes(osw);
+			} catch(Exception e) {
+				System.err.println("Exception in writing to " + indexFile);
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void printIndexes(OutputStreamWriter writer)
+	{
+		if(writer == null)
+		{
+			writer = new OutputStreamWriter(System.out);
+		}
+
+		try {
+			String documentsIndex = Utils.printDocumentIndex(_documentsMap);
+			writer.write(documentsIndex);
+			writer.write(Utils.getCRLF());
+
+			String termIndex = Utils.printIndex(_termIndex);
+			writer.write(termIndex);
+			writer.write(Utils.getCRLF());
+			writer.flush();
+		} catch (Exception e) {
+			System.err.println("Exception in writing to stream in printIndexes");
+			e.printStackTrace();
+		}
 	}
 
 	public Set<String> query(String queryString)
@@ -54,7 +104,7 @@ public class IRManager
 		Set<Integer> foundDocIds = find(queryParams);
 		for(Integer id : foundDocIds)
 		{
-			retVal.add(_textParser.getDocumentsMap().get(id));
+			retVal.add(_documentsMap.get(id));
 		}
 
 		return retVal;
@@ -62,8 +112,8 @@ public class IRManager
 
 	private Set<Integer> find(List<String> queryTerms)
 	{
-		Map<String, TreeMap<Integer, ArrayList<Integer>> > index = _textParser.getIndex();
-		Set<Integer> retVal = new HashSet<>(_textParser.getDocumentsMap().keySet());
+		Map<String, TreeMap<Integer, ArrayList<Integer>> > index = _termIndex;
+		Set<Integer> retVal = new HashSet<>(_documentsMap.keySet());
 
 		for(String queryTerm : queryTerms)
 		{
@@ -71,8 +121,80 @@ public class IRManager
 				final Set<Integer> termDocSet = new HashSet<>(index.get(queryTerm).keySet());
 				retVal.retainAll(termDocSet);
 			}
+			else
+			{
+				retVal.clear();
+				break;
+			}
 		}
 
 		return retVal;
+	}
+
+	private void parseIndexFile(String indexFile)
+	{
+		String indexFileContents = Utils.readFile(indexFile);
+		if(indexFileContents.length() == 0)
+		{
+			return;
+		}
+
+		String[] lines = indexFileContents.split(Utils.getCRLF());
+		//Read the documents map.
+		_documentsMap = new TreeMap<>();
+
+		int i = 0;
+		for(; i < lines.length; i++)
+		{
+			String line = lines[i];
+			line = line.trim();
+
+			if(line.length() == 0)
+				break;
+			//Split on " -> ".
+			String[] pair = line.split(" -> ");
+			_documentsMap.put(Integer.parseInt(pair[0]), pair[1]);
+		}
+
+		_termIndex = new TreeMap<>();
+
+		//Parse the index file.
+		for(; i < lines.length; i++)
+		{
+			String line = lines[i];
+			if(line.length() == 0)
+				continue;
+
+			//Split on " -> "
+			String[] pair = line.split(" -> ");
+			String term = pair[0].trim();
+			String docIndexString = pair[1].trim();
+
+			//Split docIndexString on ;
+			String[] docIndexes = docIndexString.split(";");
+
+			TreeMap<Integer, ArrayList<Integer>> docIndexMap = new TreeMap<>();
+			for(String docIndex : docIndexes)
+			{
+				//Parse each document index
+				//Split on :
+				docIndex = docIndex.trim();
+				String[] docIndexesPair = docIndex.split(":");
+				Integer documentId = Integer.parseInt(docIndexesPair[0].trim());
+				String indexString = docIndexesPair[1].trim();
+				//Split indices on ,
+				String[] indices = indexString.split(",");
+				ArrayList<Integer> indexArray = new ArrayList<>();
+				for(String index : indices)
+				{
+					indexArray.add(Integer.parseInt(index.trim()));
+				}
+
+				docIndexMap.put(documentId, indexArray);
+			}
+
+			_termIndex.put(term, docIndexMap);
+		}
+
 	}
 }

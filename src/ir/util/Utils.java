@@ -2,6 +2,9 @@ package ir.util;
 
 import ir.filter.Filter;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.*;
 
 public class Utils
@@ -35,7 +38,34 @@ public class Utils
 		return retVal;
 	}
 
+	public static String getCRLF()
+	{
+		return System.getProperty("line.separator");
+	}
 
+	public static String readFile(String fileName)
+	{
+		String retVal = "";
+
+		try {
+			File file = new File(fileName);
+			BufferedInputStream bin = new BufferedInputStream(new FileInputStream(
+					file));
+			byte[] buffer = new byte[(int) file.length()];
+			if(bin.read(buffer) == 0)
+			{
+				System.out.println("Could not read file " + fileName);
+			}
+			else
+				retVal = new String(buffer);
+		}
+		catch(Exception e)
+		{
+			System.err.println("Could not read from file " + fileName);
+			e.printStackTrace();
+		}
+		return retVal;
+	}
 
 	public static String printDocumentIndex(Map<Integer, String> documentsMap)
 	{

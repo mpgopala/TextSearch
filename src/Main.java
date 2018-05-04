@@ -1,6 +1,5 @@
 import ir.IRManager;
 
-import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -20,11 +19,12 @@ class Main {
                     "src/testdata/Doc6.txt"
             };
 
+            System.out.println("args: " + args.length);
+
 
 	        if(args.length > 0)
 				fileNames = args;
-	        IRManager irManager = new IRManager(fileNames, null);
-	        irManager.parse();
+	        IRManager irManager = new IRManager(null, "out/indexFile.txt");
 
 	        boolean quit = false;
 

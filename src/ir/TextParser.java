@@ -22,32 +22,6 @@ class TextParser {
 
     final Map<String, TreeMap<Integer, ArrayList<Integer>> > getIndex() { return index; }
 
-    private static String readFile(String fileName)
-    {
-        String retVal = "";
-
-        try {
-            File file = new File(fileName);
-            BufferedInputStream bin = new BufferedInputStream(new FileInputStream(
-                    file));
-            byte[] buffer = new byte[(int) file.length()];
-            if(bin.read(buffer) == 0)
-            {
-            	System.out.println("Could not read file " + fileName);
-            }
-            else
-	            retVal = new String(buffer);
-        }
-        catch(Exception e)
-        {
-			System.err.println("Could not read from file " + fileName);
-			e.printStackTrace();
-        }
-        return retVal;
-    }
-
-
-
     TextParser(String[] files, ArrayList<Filter> filters)
     {
     	if(files == null)
@@ -55,7 +29,7 @@ class TextParser {
 
         for(String file : files)
         {
-            String fileContents = readFile(file);
+            String fileContents = Utils.readFile(file);
             String[] fileTokens = fileContents.split(" ");
             Integer id = documentsMap.size() + 1;
             documentsMap.put(id, file);
