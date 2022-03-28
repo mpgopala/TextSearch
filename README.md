@@ -1,4 +1,4 @@
-# IRAssignment
+# TextSearch
 Has removal of stopwords, a basic stemmer and construction of index.
 One can run this and after the index construction is done, can query the 
 document corpus for a query string which is taken as a conjunctive boolean 
